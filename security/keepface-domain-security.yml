@@ -1,0 +1,16 @@
+generated: '2026-07-19'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
+hosts:
+- host: keepface.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Aug 21 18:23:27 2026 GMT
+  hsts: null
+domains:
+- domain: keepface.com
+  dnssec: false
+  caa: []
+  spf: true
+  dmarc: true
+  dmarc_policy: none
