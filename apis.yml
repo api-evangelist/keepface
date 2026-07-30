@@ -1,7 +1,25 @@
 aid: keepface
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source: []
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/keepface.png
 name: KeepFace
-description: KeepFace is a company surfaced as a portfolio company of 500-global and added to the API
-  Evangelist network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+description: KeepFace is an all-in-one influencer marketing platform that helps brands,
+  agencies, and enterprises discover, manage, and measure creator campaigns at scale.
+  The platform spans creator discovery and CRM across 2M+ influencers in 43 countries,
+  campaign management from brief through outreach, contract, and content approval,
+  AI-driven brand-safety scoring and sentiment analysis of posts, real-time performance
+  reporting (engagement rate, estimated media value, deletion-proof post archives),
+  affiliate link tracking with pay-on-attributed-sales commissioning, and customer
+  and employee advocacy programs. KeepFace is a portfolio company of 500 Global.
 url: https://raw.githubusercontent.com/api-evangelist/keepface/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -11,9 +29,16 @@ x-tier: stub
 x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-19'
 tags:
 - Company
+- Influencer Marketing
+- Creator Economy
+- Marketing
+- Social Media
+- Affiliate Marketing
+- Advocacy
+- Campaign Management
 apis: []
 maintainers:
 - FN: Kin Lane
@@ -23,3 +48,24 @@ maintainers:
 common:
 - type: Website
   url: https://keepface.com
+- type: Documentation
+  url: https://help.keepface.com
+- type: Support
+  url: https://help.keepface.com
+- type: Pricing
+  url: https://keepface.com/pricing
+- type: SignUp
+  url: https://keepface.com/signup
+- type: Login
+  url: https://keepface.com/login
+- type: TermsOfService
+  url: https://keepface.com/terms
+- type: PrivacyPolicy
+  url: https://keepface.com/privacy
+- type: DomainSecurity
+  url: security/keepface-domain-security.yml
+x-enrichment:
+  date: '2026-07-19'
+  status: backfilled
+  pass: local-v1
+  note: backfilled from .gitignore signal + verified work evidence
