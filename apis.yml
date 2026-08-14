@@ -1,15 +1,24 @@
 aid: keepface
 accessModel:
-  pricing: unknown
-  onboarding: unknown
-  trial: false
-  try_now: false
-  public: false
-  label: Unknown
-  confidence: low
-  source: []
-  generated: '2026-07-22'
-  method: derived
+  pricing: public
+  onboarding: self-service
+  trial: true
+  try_now: true
+  public: true
+  label: Self-service with a free tier
+  confidence: high
+  source:
+  - https://keepface.com/pricing
+  - https://keepface.com/ai-info
+  - https://keepface.com/signup
+  - https://help.keepface.com/brand/integrations/manage-with-claude-code/
+  generated: '2026-08-13'
+  method: searched
+  note: >-
+    Itemised per-product pricing is published, four of the five products have a
+    free tier, and signup is open. API access is not separately gated or sold:
+    the affiliate endpoints ship with the Affiliate Program product and an MCP
+    token is self-issued from Settings, API Tokens inside a brand workspace.
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/keepface.png
 name: KeepFace
 description: KeepFace is an all-in-one influencer marketing platform that helps brands,
@@ -25,11 +34,12 @@ x-type: company
 x-source: vc-portfolio
 x-backed-by:
 - 500-global
-x-tier: stub
-x-tier-reason: portfolio-lead
+x-tier: profiled
+x-tier-reason: two public API surfaces found and documented — a signed REST affiliate
+  API and a hosted MCP server
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-19'
+modified: '2026-08-13'
 tags:
 - Company
 - Influencer Marketing
@@ -39,7 +49,65 @@ tags:
 - Affiliate Marketing
 - Advocacy
 - Campaign Management
-apis: []
+- MCP
+- AI Agents
+- Attribution
+- Webhooks
+apis:
+- aid: keepface:affiliate
+  name: Keepface Affiliate API v2
+  description: The public server-side affiliate tracking API for Keepface. Brands POST
+    sale and refund events from their own backend (or from Shopify, or from the browser
+    JS pixel) and Keepface attributes them to the creator whose link or discount code
+    drove the sale. Every write is HMAC-SHA256 signed with a per-brand secret over a
+    timestamped payload, replay-protected at a 300 second tolerance, and idempotent on
+    (brand_id, order_id). A public click-resolve endpoint turns a short affiliate token
+    into a destination URL, cookie window and campaign status. Rate limits and Retry-After
+    are published per endpoint, and the API returns X-RateLimit-Limit / X-RateLimit-Remaining
+    on live responses.
+  humanURL: https://help.keepface.com/brand/affiliate-program/api-reference/
+  baseURL: https://api.keepface.ai/api/v2
+  tags:
+  - Affiliate Marketing
+  - Attribution
+  - Webhooks
+  - Conversion Tracking
+  properties:
+  - type: APIReference
+    url: https://help.keepface.com/brand/affiliate-program/api-reference/
+  - type: Documentation
+    url: https://help.keepface.com/brand/affiliate-program/postback-hmac-integration/
+  - type: Webhooks
+    url: asyncapi/keepface-affiliate-webhooks.yml
+  - type: ErrorCatalog
+    url: errors/keepface-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/keepface-rate-limits.yml
+  - type: DataModel
+    url: data-model/keepface-data-model.yml
+- aid: keepface:mcp
+  name: Keepface MCP Server
+  description: A hosted, remote Model Context Protocol server that exposes 94 actions
+    across the Keepface brand workspace — discovery, lists, campaigns, outreach, reporting,
+    affiliate, wallet (read-only), CRM, brands, AI analysis and creator chat. An agent
+    POSTs to the endpoint with a workspace-scoped bearer token created in Settings, API
+    Tokens; the server loads only the tools the token's scopes allow. Reads execute
+    immediately, every write returns a preview and runs only on confirmation, and no
+    token can move money — top-up, withdraw, currency conversion, influencer payout and
+    affiliate commission changes are never exposed.
+  humanURL: https://help.keepface.com/brand/integrations/manage-with-claude-code/
+  baseURL: https://mcp.keepface.com/mcp
+  tags:
+  - MCP
+  - AI Agents
+  - Influencer Marketing
+  properties:
+  - type: MCPServer
+    url: mcp/keepface-mcp.yml
+  - type: Documentation
+    url: https://help.keepface.com/brand/integrations/claude-code-tools-reference/
+  - type: OAuthScopes
+    url: scopes/keepface-scopes.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -64,8 +132,62 @@ common:
   url: https://keepface.com/privacy
 - type: DomainSecurity
   url: security/keepface-domain-security.yml
+- type: APIReference
+  url: https://help.keepface.com/brand/affiliate-program/api-reference/
+- type: GettingStarted
+  url: https://help.keepface.com/brand/getting-started/welcome/
+- type: HelpCenter
+  url: https://help.keepface.com
+- type: LLMsTxt
+  url: llms/keepface-llms.txt
+- type: MCPServer
+  url: mcp/keepface-mcp.yml
+- type: Authentication
+  url: authentication/keepface-authentication.yml
+- type: OAuthScopes
+  url: scopes/keepface-scopes.yml
+- type: Conventions
+  url: conventions/keepface-conventions.yml
+- type: Idempotency
+  url: conventions/keepface-conventions.yml
+- type: RateLimits
+  url: rate-limits/keepface-rate-limits.yml
+- type: ErrorCatalog
+  url: errors/keepface-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/keepface-lifecycle.yml
+- type: Deprecation
+  url: https://help.keepface.com/brand/affiliate-program/api-reference/
+- type: ChangeLog
+  url: changelog/keepface-changelog.yml
+- type: Conformance
+  url: conformance/keepface-conformance.yml
+- type: Webhooks
+  url: asyncapi/keepface-affiliate-webhooks.yml
+- type: DataModel
+  url: data-model/keepface-data-model.yml
+- type: Packages
+  url: packages/keepface-packages.yml
+- type: Plans
+  url: plans/keepface-plans-pricing.yml
+- type: CookiePolicy
+  url: https://keepface.com/cookie-policy
+- type: UserAgreement
+  url: https://keepface.com/user-agreement
+- type: GDPR
+  url: https://keepface.com/gdpr
+- type: Glossary
+  url: https://keepface.com/resources/glossary
+- type: Guides
+  url: https://keepface.com/resources/guides
 x-enrichment:
-  date: '2026-07-19'
-  status: backfilled
+  date: '2026-08-13'
+  status: enriched
+  artifacts_added: 15
   pass: local-v1
-  note: backfilled from .gitignore signal + verified work evidence
+  note: >-
+    Contract discovery beat the stub. The CSP on keepface.com named api.keepface.ai,
+    the served llms.txt named /api/v2 as the source of truth, and the help centre
+    published a full Affiliate API v2 reference plus a live hosted MCP server at
+    https://mcp.keepface.com/mcp (94 tools, 11 scopes, probed 401). No OpenAPI is
+    published, so none was authored.
