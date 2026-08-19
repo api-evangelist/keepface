@@ -1,0 +1,97 @@
+generated: '2026-08-13'
+method: searched
+source: https://keepface.com/ai-info
+docs:
+- https://keepface.com/pricing
+- https://keepface.com/ai-info
+
+# Keepface publishes complete, itemised pricing publicly — both on the pricing page
+# and, unusually, in a machine-addressed brief at /ai-info written for AI assistants
+# and linked from /llms.txt. Values below are transcribed from that page.
+
+currency: USD
+billing_period: month
+annual_discount: 'Annual billing saves 30%'
+free_tier: true
+enterprise_tier: true
+enterprise_pricing: custom (contact sales)
+plan_count: 17
+
+products:
+
+- product: Influencer CRM
+  tiers:
+  - {name: Free, price: 0, currency: USD, period: month}
+  - {name: Starter, price: 29, currency: USD, period: month}
+  - {name: Growth, price: 149, currency: USD, period: month}
+  - {name: Enterprise, price: null, currency: USD, period: month, note: custom}
+
+- product: Campaign Management & Reporting
+  tiers:
+  - {name: Free, price: null, note: not offered on this product}
+  - {name: Starter, price: 149, currency: USD, period: month}
+  - {name: Growth, price: 349, currency: USD, period: month}
+  - {name: Enterprise, price: null, currency: USD, period: month, note: custom}
+
+- product: Affiliate Program
+  tiers:
+  - {name: Free, price: 0, currency: USD, period: month}
+  - {name: Starter, price: 49, currency: USD, period: month}
+  - {name: Growth, price: 149, currency: USD, period: month}
+  - {name: Enterprise, price: null, currency: USD, period: month, note: custom}
+
+- product: Customer Advocacy
+  tiers:
+  - {name: Free, price: 0, currency: USD, period: month}
+  - {name: Starter, price: 78, currency: USD, period: month}
+  - {name: Growth, price: 480, currency: USD, period: month}
+  - {name: Enterprise, price: null, currency: USD, period: month, note: custom}
+
+- product: Employee Advocacy
+  tiers:
+  - {name: Free, price: 0, currency: USD, period: month}
+  - {name: Starter, price: 78, currency: USD, period: month}
+  - {name: Growth, price: 480, currency: USD, period: month}
+  - {name: Enterprise, price: null, currency: USD, period: month, note: custom}
+
+add_ons:
+- {name: White Label, price: 250, currency: USD, period: month, overage: '$69/mo per
+    extra domain'}
+- {name: Agency Add-on, price: 168, currency: USD, period: month}
+
+usage_based:
+- name: AI Content Analysis
+  included: 5 free runs per month
+  overage: 0.05
+  currency: USD
+  unit: per post
+- name: AI Intelligence Profile
+  price_member: 25
+  price_guest: 35
+  currency: USD
+  unit: per unlock
+- name: Escrow
+  rate: 5%
+  basis: of the campaign amount
+  cap: 500
+  currency: USD
+  cap_basis: per campaign
+- name: Managed Service
+  rate: 20%
+  basis: of the campaign budget
+  retainer: none
+
+api_pricing:
+  metered: false
+  note: >-
+    Neither the Affiliate API v2 nor the MCP server is priced or metered as a
+    separate line item. API access is an entitlement of the product subscription:
+    affiliate endpoints come with the Affiliate Program product, and MCP tokens
+    are created inside a brand workspace. The only API-reachable actions that
+    cost money are the ones that consume existing product credit — start_outreach
+    charges the wallet and start_analyze buys an AI Intelligence report at the
+    published unlock price.
+
+x-evidence:
+- {url: 'https://keepface.com/ai-info', http_status: 200, fetched: '2026-08-13'}
+- {url: 'https://keepface.com/pricing', http_status: 200, fetched: '2026-08-13'}

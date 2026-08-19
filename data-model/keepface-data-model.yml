@@ -1,0 +1,114 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+
+# Derived from the provider's published field tables and response examples, not
+# from an OpenAPI — Keepface publishes no machine-readable spec, so this graph
+# covers only the entities the public Affiliate API v2 actually exposes. The
+# larger product model (campaigns, lists, wallet, CRM, threads) is reachable only
+# through the MCP server, whose schemas are auth-gated; those entities are named
+# below without fields rather than guessed at.
+
+api: Keepface Affiliate API v2
+base_url: https://api.keepface.ai/api/v2
+entity_count: 5
+
+entities:
+
+- name: conversion
+  description: An attributed sale. Created by a postback, pixel or Shopify event and
+    returned in the 201 response body.
+  identity: order_id, unique per brand
+  fields:
+  - {name: order_id, type: string, max_length: 128, required: true, role: idempotency
+      key}
+  - {name: gross_amount, type: number, required: true, units: major}
+  - {name: net_amount, type: number, required: false}
+  - {name: currency, type: string, length: 3, format: ISO 4217}
+  - {name: customer_email, type: string, pii: true, storage: hashed}
+  - {name: customer_ip, type: string, pii: true, storage: hashed}
+  - {name: customer_country, type: string, length: 2, format: ISO 3166-1 alpha-2}
+  - {name: skus, type: "string[]"}
+  - {name: categories, type: "string[]"}
+  - {name: brand_confirmed_at, type: string, format: ISO 8601}
+  - {name: source_method, type: enum, values: [postback]}
+  - {name: metadata, type: object}
+  relationships:
+  - {type: belongs_to, target: brand, via: brand_id}
+  - {type: belongs_to, target: affiliate_link, via: token}
+  - {type: belongs_to, target: affiliate_link, via: discount_code, note: fallback path
+      when token is absent}
+  - {type: has_many, target: refund, via: order_id}
+
+- name: refund
+  description: A clawback against an existing conversion.
+  identity: refund_id when present, otherwise sha256(refund_amount + currency) scoped
+    to the order
+  fields:
+  - {name: order_id, type: string, required: true}
+  - {name: refund_id, type: string, required: false}
+  - {name: refund_amount, type: number, required: true}
+  - {name: currency, type: string, length: 3}
+  - {name: brand_confirmed_at, type: string, format: ISO 8601}
+  - {name: metadata, type: object}
+  relationships:
+  - {type: belongs_to, target: conversion, via: order_id}
+  - {type: belongs_to, target: brand, via: brand_id}
+
+- name: affiliate_link
+  description: A short creator-specific tracking token that resolves to a destination
+    URL. Returned by the public resolve endpoint.
+  identity: token
+  fields:
+  - {name: token, type: string, length: 8, format: mixed-case base62, case_sensitive: true}
+  - {name: destination_url, type: string, format: uri}
+  - {name: cookie_days, type: integer, note: attribution window}
+  - {name: campaign_status, type: string, example: active}
+  relationships:
+  - {type: belongs_to, target: campaign, via: campaign_id}
+  - {type: belongs_to, target: influencer, via: influencer_id}
+  - {type: belongs_to, target: brand, via: brand_id}
+  - {type: has_many, target: conversion, via: token}
+
+- name: brand
+  description: The tenant of the affiliate program. Its numeric id is the path segment
+    on every write endpoint.
+  identity: brand_id (numeric)
+  id_location: 'Brands > Edit > URL, last segment'
+  fields:
+  - {name: brand_id, type: integer, role: path parameter}
+  - {name: affiliate_secret, type: string, sensitive: true, shown_once: true, rotatable: true,
+    rotation_overlap_days: 7}
+  - {name: shopify_secret, type: string, sensitive: true}
+  - {name: allowed_pixel_origins, type: "string[]"}
+  - {name: excluded_skus, type: "string[]"}
+  - {name: excluded_categories, type: "string[]"}
+  relationships:
+  - {type: has_many, target: conversion, via: brand_id}
+  - {type: has_many, target: affiliate_link, via: brand_id}
+  - {type: has_many, target: campaign, via: brand_id}
+
+- name: campaign
+  description: The campaign an affiliate link belongs to. Referenced by the resolve
+    response; not directly manipulable through the public REST API.
+  identity: campaign_id (numeric)
+  fields:
+  - {name: campaign_id, type: integer}
+  - {name: campaign_status, type: string, observed_values: [active], lifecycle_signals: [
+      not_yet_active, expired]}
+  relationships:
+  - {type: belongs_to, target: brand, via: brand_id}
+  - {type: has_many, target: affiliate_link, via: campaign_id}
+
+entities_behind_auth:
+  # Named in the MCP tool surface but with no published schema. Recorded so the
+  # gap is visible rather than silently dropped; fields would require an
+  # authenticated introspection of the MCP server.
+  note: reachable only via https://mcp.keepface.com/mcp with a scoped bearer token
+  names: [list, list_member, campaign_outreach, campaign_report, wallet, wallet_transaction,
+    escrow, payment_event, subscription, crm_member, crm_invite, roster_member, thread,
+    message, account, affiliate_member, affiliate_dispute, analysis]
+
+x-evidence:
+- {url: 'https://help.keepface.com/brand/affiliate-program/api-reference/', http_status: 200,
+  fetched: '2026-08-13'}

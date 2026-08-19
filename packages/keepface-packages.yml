@@ -1,0 +1,64 @@
+generated: '2026-08-13'
+method: searched
+source: registry searches against npm, PyPI, RubyGems, crates.io, Packagist, NuGet,
+  pkg.go.dev and Maven Central, plus the Keepface help centre and GitHub
+
+# HONEST ZERO. Keepface publishes no client libraries in any package registry and
+# runs no public GitHub organisation. No SDKs pointer is emitted in apis.yml,
+# because there is no SDK to point at.
+
+package_count: 0
+official_package_count: 0
+sdk_count: 0
+packages: []
+
+registries_searched:
+- {registry: npm, query: keepface, results: 0, endpoint: 'https://registry.npmjs.org/-/v1/search?text=keepface',
+  checked: '2026-08-13'}
+- {registry: pypi, queries: [keepface, keepface-sdk, keepface-api], results: 0, note: all
+    404 on pypi.org/pypi/<name>/json, checked: '2026-08-13'}
+- {registry: rubygems, query: keepface, results: 0, checked: '2026-08-13'}
+- {registry: crates.io, query: keepface, results: 0, checked: '2026-08-13'}
+- {registry: packagist, query: keepface, results: 0, checked: '2026-08-13'}
+- {registry: nuget, query: keepface, results: 0, checked: '2026-08-13'}
+- {registry: maven-central, query: keepface, results: 0, checked: '2026-08-13'}
+- {registry: pkg.go.dev, query: keepface, results: 0, checked: '2026-08-13'}
+
+github:
+  organization: none found
+  probed: [github.com/keepface, github.com/Keepface, github.com/keepface-global]
+  repo_search: 'api.github.com/search/repositories?q=keepface returned 3 results, none
+    of them first-party (two unrelated personal repos and the API Evangelist profile
+    repo for this company)'
+  checked: '2026-08-13'
+
+undistributed_client_code:
+  # Real first-party client-side code that is NOT distributed as a package.
+  - name: Keepface affiliate JS pixel
+    kind: browser tracking snippet
+    registry: null
+    version: null
+    published: null
+    official: true
+    documented_at: https://help.keepface.com/influencer/affiliate-program/js-pixel-install/
+    note: >-
+      Keepface ships a first-party JS pixel that brands install on their checkout
+      success page, but the documentation describes only the conceptual flow —
+      the actual script tag, CDN URL and any version pin are not published on the
+      public help centre, and the snippet appears to be issued per brand inside
+      the panel. Nothing can be pinned or versioned from the public surface, so
+      version is null: checked, nothing to record.
+
+integration_surface:
+  note: >-
+    The absence of an SDK is less consequential here than it would normally be,
+    because Keepface's two integration paths need no client library. The
+    Affiliate API v2 is four HTTPS endpoints with an HMAC signature any standard
+    crypto library can produce, and the agent surface is an MCP server consumed
+    by an off-the-shelf MCP client via a JSON config block. There is no
+    first-party wrapper for either.
+
+x-evidence:
+- {url: 'https://registry.npmjs.org/-/v1/search?text=keepface', http_status: 200, result: '{"total":0}',
+  fetched: '2026-08-13'}
+- {url: 'https://pypi.org/pypi/keepface/json', http_status: 404, fetched: '2026-08-13'}

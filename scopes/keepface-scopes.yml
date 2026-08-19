@@ -1,0 +1,110 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/integrations/claude-code-tools-reference/
+docs: https://help.keepface.com/brand/integrations/manage-with-claude-code/
+
+# NOT OAuth. Keepface implements no OAuth 2.0 or OIDC anywhere (see
+# ../authentication/keepface-authentication.yml). These are the scopes attached to
+# the static bearer API token that authorises the MCP server, chosen as checkboxes
+# by a human at token-creation time. They are recorded here because they are a
+# real, published, enumerated permission surface — one checkbox per area of the
+# brand panel — and the token loads only the tools its scopes allow.
+
+scheme: bearer-api-token
+oauth2: false
+grant_flow: none (token minted in the panel, no authorization endpoint)
+selection: per-token checkbox at creation; least-privilege is the documented advice
+  ("grant only the scopes you need. You can always create a second token with more")
+enforcement: >-
+  The server resolves scopes from the token and loads only the permitted tools.
+  A call outside the granted scopes returns HTTP 403.
+workspace_binding: every token is pinned to one brand workspace and cannot act in
+  another
+applies_to: https://mcp.keepface.com/mcp
+
+scope_count: 11
+
+scopes:
+- scope: discovery
+  description: Search the marketplace and read discovery profiles, autocomplete,
+    curated rows and audience forecasts. Also carries the token-identity tools.
+  access: read-only
+  tools: 8
+- scope: lists
+  description: Build and manage influencer lists, including submitting and recalling
+    them and sending list email invites.
+  access: read+write
+  destructive_tools: [delete_list]
+  message_sending_tools: [create_list_email_invite]
+  tools: 11
+- scope: campaigns
+  description: Create, update, submit and delete campaigns, and attach or detach
+    influencers and lists.
+  access: read+write
+  destructive_tools: [delete_campaign]
+  tools: 11
+- scope: outreach
+  description: Manage recruitment replies and the shortlist, and start outreach.
+  access: read+write
+  wallet_charging_tools: [start_outreach]
+  message_sending_tools: [start_outreach]
+  tools: 6
+  note: start_outreach charges the wallet, locks escrow and notifies the creator
+- scope: reporting
+  description: Campaign performance, sales and barter overviews, account intelligence
+    reports, payment events, escrow and subscription state.
+  access: read-only
+  tools: 9
+- scope: affiliate
+  description: Affiliate program management — overview, stats, conversions, members,
+    audit, settings and landing page; approve/reject/disable members and open disputes.
+  access: read+write
+  tools: 15
+  excluded: >-
+    Changing commission, importing sales and rotating secrets are deliberately not
+    exposed to any token; they stay in the panel.
+- scope: wallet
+  description: Balance, ledger, breakdown, transactions, FX quotes and rates, top-up
+    packages.
+  access: read-only
+  tools: 7
+  note: read-only by design; no token can top up, convert, withdraw or pay out
+- scope: crm
+  description: Creator contacts and the My Influencers roster — members, invites,
+    roster records.
+  access: read+write
+  destructive_tools: [delete_crm_invite, remove_roster_member]
+  message_sending_tools: [invite_crm_email]
+  tools: 12
+- scope: brand
+  description: Company and brand profiles — list, create, update, set default, delete,
+    and read the per-brand affiliate config.
+  access: read+write
+  destructive_tools: [delete_brand]
+  tools: 6
+- scope: analyze
+  description: Paid on-demand AI Intelligence reports plus the free pricing estimate.
+  access: read+write
+  wallet_charging_tools: [start_analyze]
+  tools: 2
+- scope: chat
+  description: Read and send creator messages, including bulk sends across up to 200
+    threads.
+  access: read+write
+  message_sending_tools: [send_message, bulk_send]
+  tools: 6
+
+global_restrictions:
+# Enforced above the scope layer — no combination of scopes unlocks these.
+- Top-up, currency conversion, withdrawal, influencer payouts and affiliate
+  commission settings are never available to any token.
+- Every write returns a preview and executes only after an explicit confirmation.
+- Account security settings cannot be changed by a token.
+
+errors:
+- {status: 403, meaning: unauthorized, or the token lacks the scope for this tool}
+- {status: 402, meaning: insufficient wallet balance for a charging tool}
+
+x-evidence:
+- {url: 'https://help.keepface.com/brand/integrations/claude-code-tools-reference/',
+  http_status: 200, fetched: '2026-08-13'}

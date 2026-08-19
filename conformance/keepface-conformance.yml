@@ -1,0 +1,137 @@
+generated: '2026-08-13'
+method: derived
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+
+# Derived from the provider's published contract plus live probes. No Compliance
+# pointer is emitted in apis.yml: Keepface publishes no certification, no audit
+# report and no trust centre, so asserting a compliance programme would be
+# unearned. The regulatory rows below record product commitments Keepface states
+# about its own data handling, not third-party attestations.
+
+standards:
+
+- id: oauth2
+  conforms: false
+  evidence: no authorization endpoint, no token endpoint, no /.well-known/oauth-authorization-server
+    (404 on every host); the MCP server uses a static bearer token minted in the panel
+
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 404 on every host
+
+- id: rfc9728-oauth-protected-resource
+  conforms: false
+  evidence: mcp.keepface.com/.well-known/oauth-protected-resource returns 404, so an
+    agent cannot discover the auth requirement from the endpoint
+
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: 'errors are a custom {"error": "<slug>"} envelope over application/json;
+    no application/problem+json is served'
+
+- id: rfc8615-well-known
+  conforms: false
+  evidence: no /.well-known/ document is served on any Keepface host (9 paths probed
+    on 4 hosts, all 404)
+
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt returns 404 on keepface.com, api.keepface.ai,
+    mcp.keepface.com and help.keepface.com
+
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: no Sunset or Deprecation header on any observed response, although a
+    12-month minimum support window for v2 is stated in prose
+
+- id: rfc9331-ratelimit-headers
+  conforms: false
+  partial: true
+  evidence: rate-limit state IS signalled, but with the legacy X-RateLimit-Limit /
+    X-RateLimit-Remaining names rather than the standard RateLimit-* form; no reset
+    field is returned
+
+- id: retry-after
+  conforms: true
+  evidence: Retry-After is documented as returned on 429 and callers are instructed
+    to honour it
+
+- id: idempotency
+  conforms: true
+  evidence: order_id is the documented idempotency key; composite scopes are published
+    per endpoint; a replay returns 200 with created:false instead of duplicating
+
+- id: hmac-request-signing
+  conforms: true
+  evidence: HMAC-SHA256 over "<timestamp>.<body>" with X-KF-Signature and X-KF-Timestamp,
+    300-second replay tolerance, 7-day secret-rotation overlap
+
+- id: shopify-webhook-verification
+  conforms: true
+  evidence: standard X-Shopify-Hmac-Sha256 base64 HMAC verification on the Shopify
+    receiver
+
+- id: openapi
+  conforms: false
+  evidence: no OpenAPI or Swagger document is published; every discovery path probed
+    on the API host, the docs host and the website returned 404 or an HTML shell
+
+- id: asyncapi
+  conforms: false
+  evidence: no AsyncAPI document; the event surface is inbound-only and documented in
+    prose
+
+- id: mcp
+  conforms: true
+  evidence: a hosted MCP server over HTTP at https://mcp.keepface.com/mcp, 94 published
+    tools, scope-gated bearer auth, live (401 on anonymous tools/list)
+
+- id: a2a
+  conforms: false
+  evidence: no agent card at /.well-known/agent-card.json or /.well-known/agent.json
+    on any host
+
+- id: llms-txt
+  conforms: true
+  evidence: https://keepface.com/llms.txt returns 200 text/plain with a structured
+    llms.txt document; captured verbatim at llms/keepface-llms.txt
+
+- id: iso4217
+  conforms: true
+  evidence: currency is specified as a 3-letter uppercase ISO 4217 code
+
+- id: iso3166-1-alpha-2
+  conforms: true
+  evidence: customer_country is specified as ISO 3166-1 alpha-2
+
+- id: iso8601
+  conforms: true
+  evidence: brand_confirmed_at and refund timestamps are ISO 8601
+
+regulatory_claims:
+  # Stated by Keepface about its own product. NOT third-party certified.
+  certified: false
+  claims:
+  - {id: gdpr, published: true, evidence: 'dedicated GDPR / data-subject-rights page
+      at https://keepface.com/gdpr, plus documented data export and deletion flows
+      and a consent vault feature', attested: false}
+  - {id: ccpa, published: true, evidence: consent and GDPR/CCPA documentation in the
+      Customer Advocacy product, attested: false}
+  - {id: pii-minimisation, published: true, evidence: 'customer_email and customer_ip
+      are hashed before storage; "We don''t sell data, don''t share with advertisers,
+      and don''t train external AI models on your private content"', attested: false}
+
+not_found:
+  soc2: no evidence published
+  iso27001: no evidence published
+  pci_dss: no evidence published — card handling is delegated to Stripe
+  hipaa: not applicable
+  fedramp: not applicable
+  trust_center: probed https://trust.keepface.com (404) and https://keepface.com/trust
+    (soft-200 marketing homepage)
+
+x-evidence:
+- {url: 'https://api.keepface.ai/api/v2/affiliate/resolve/zzzz', http_status: 400, fetched: '2026-08-13'}
+- {url: 'https://mcp.keepface.com/mcp', http_status: 401, fetched: '2026-08-13'}
+- {url: 'https://keepface.com/llms.txt', http_status: 200, fetched: '2026-08-13'}
+- {url: 'https://trust.keepface.com', http_status: 404, fetched: '2026-08-13'}

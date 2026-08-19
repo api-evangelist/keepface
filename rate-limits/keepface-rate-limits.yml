@@ -1,0 +1,101 @@
+generated: '2026-08-13'
+method: probed
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+docs: https://help.keepface.com/brand/affiliate-program/api-reference/
+
+# method: probed rather than searched because the response headers below were
+# observed on live anonymous requests to api.keepface.ai, not only read from the
+# docs. The published numbers and the live headers agree.
+
+api: Keepface Affiliate API v2
+base_url: https://api.keepface.ai/api/v2
+
+limit_count: 6
+
+signaling:
+  headers:
+  - {name: X-RateLimit-Limit, meaning: the ceiling for this endpoint in the current
+      window, observed: true, observed_value: '600'}
+  - {name: X-RateLimit-Remaining, meaning: requests left in the current window, observed: true,
+      observed_value: '599'}
+  - {name: Retry-After, meaning: seconds to wait after a 429, observed: false, documented: true}
+  reset_header: not returned
+  standard: non-standard X-RateLimit-* (not the RFC 9331 RateLimit-* form)
+  exhaustion_status: 429
+  exhaustion_body: '{"error":"Too Many Requests"}'
+  note: >-
+    The limit headers are returned on ordinary successful and error responses, not
+    only near exhaustion, so an agent can read its budget before it is spent. That
+    is the runtime signal — the numbers in the docs alone would not tell a client
+    how much of the window it has already used.
+
+scope: per-IP
+window: 1 minute
+window_seconds: 60
+
+limits:
+- endpoint: POST /api/v2/affiliate/postback/{brand_id}
+  purpose: sale event from the brand backend
+  limit: 120
+  window: 1 minute
+  scope: per-IP
+  burst: not published
+- endpoint: POST /api/v2/affiliate/postback/{brand_id}/refund
+  purpose: refund event from the brand backend
+  limit: 120
+  window: 1 minute
+  scope: per-IP
+  burst: not published
+- endpoint: POST /api/v2/affiliate/pixel/{brand_id}
+  purpose: browser-side sale event from the JS pixel
+  limit: 240
+  window: 1 minute
+  scope: per-IP
+  burst: not published
+- endpoint: POST /api/v2/affiliate/shopify/{brand_id}
+  purpose: Shopify orders, refunds and uninstall webhooks
+  limit: 120
+  window: 1 minute
+  scope: per-IP
+  burst: not published
+- endpoint: GET /api/v2/affiliate/resolve/{token}
+  purpose: resolve an affiliate click to a destination URL
+  limit: 600
+  window: 1 minute
+  scope: per-IP
+  burst: not published
+  verified_live: true
+- endpoint: POST /track/page
+  purpose: page-view tracking handled by the edge Worker
+  limit: 60
+  window: 1 minute
+  scope: per-IP
+  burst: not published
+  note: served by the Cloudflare Worker, not by /api/v2
+
+on_exhaustion:
+  status: 429
+  header: Retry-After
+  guidance: 'Burst exceeded → 429 + Retry-After'
+  retry: honour Retry-After, then exponential backoff 1s, 2s, 4s, 8s, maximum 5 attempts
+
+mcp_server:
+  endpoint: https://mcp.keepface.com/mcp
+  limits_published: false
+  note: >-
+    No rate limits are published for the MCP server, and none could be observed
+    anonymously because the endpoint rejects unauthenticated calls with 401.
+
+x-evidence:
+- url: https://api.keepface.ai/api/v2/affiliate/resolve/AbCd1234
+  http_status: 404
+  headers_observed: {x-ratelimit-limit: '600', x-ratelimit-remaining: '599', cache-control: 'max-age=60,
+      public, s-maxage=60'}
+  fetched: '2026-08-13'
+- url: https://api.keepface.ai/api/v2/affiliate/resolve/zzzz
+  http_status: 400
+  headers_observed: {x-ratelimit-limit: '600', x-ratelimit-remaining: '598', cache-control: 'max-age=300,
+      public, s-maxage=300'}
+  fetched: '2026-08-13'
+- {url: 'https://help.keepface.com/brand/affiliate-program/api-reference/', http_status: 200,
+  fetched: '2026-08-13'}

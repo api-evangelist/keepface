@@ -1,0 +1,216 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/integrations/manage-with-claude-code/
+status: published
+
+# Keepface ships a first-party, hosted, remote MCP server. It is documented on the
+# provider's own help centre and the endpoint answers live: an anonymous
+# POST tools/list returns HTTP 401 {"error":"missing bearer token"} (Express,
+# behind Cloudflare), which confirms the server exists and is auth-gated rather
+# than absent. The tool list below is therefore transcribed from the provider's
+# published tools reference (94 actions, named verbatim) — NOT from a live
+# tools/list response. Input schemas require an authenticated introspection and
+# are deliberately not recorded here.
+
+deployment:
+  mode: remote
+  endpoint: https://mcp.keepface.com/mcp
+  install: null
+  package: null
+  auth: api-key
+  verified: probed
+
+server:
+  name: keepface
+  transport: http
+  url: https://mcp.keepface.com/mcp
+  protocol: MCP over HTTP
+  docs:
+    setup: https://help.keepface.com/brand/integrations/manage-with-claude-code/
+    tools_reference: https://help.keepface.com/brand/integrations/claude-code-tools-reference/
+
+authentication:
+  scheme: bearer
+  header: Authorization
+  format: 'Bearer kf_<token>'
+  token_prefix: kf_
+  issued_at: Settings, API Tokens (inside a brand workspace)
+  shown_once: true
+  default_expiry_days: 90
+  expiry_configurable: true
+  revocable: true
+  workspace_pinned: true
+  note: >-
+    A token is pinned to the single brand workspace it was created in and cannot
+    act in any other workspace, even one the same user owns. The server resolves
+    workspace and scopes from the token itself; no workspace header is required.
+
+client_configuration:
+  # Published verbatim by the provider on the setup page.
+  format: json
+  snippet: |
+    {
+      "mcpServers": {
+        "keepface": {
+          "type": "http",
+          "url": "https://mcp.keepface.com/mcp",
+          "headers": { "Authorization": "Bearer kf_your_token_here" }
+        }
+      }
+    }
+
+safety_model:
+  # These are provider-published guarantees, quoted from the tools reference.
+  reads_immediate: true
+  writes_require_confirmation: true
+  destructive_marked: true
+  money_movement_blocked: true
+  notes:
+  - 'No money moves, ever. Top-up, convert, withdraw, influencer payouts and affiliate
+    commission settings are never available. Wallet and escrow are read-only.'
+  - 'Writes confirm first. Nothing is created, changed, sent or deleted until you
+    confirm the preview.'
+  - 'One workspace. A token only acts in the workspace you created it in.'
+  markers:
+    $: charges the wallet
+    "✉": sends a real message or email
+    '!': destructive (deletes data)
+
+tool_count_published: 94
+tools_recorded: 94
+scopes: [discovery, lists, campaigns, outreach, reporting, affiliate, wallet, crm,
+  brand, analyze, chat]
+
+tools:
+- {name: search_influencers, scope: discovery, access: read, description: Search the
+    marketplace in natural language (country, category, tier, platform)}
+- {name: get_account, scope: discovery, access: read, description: Open one discovery
+    profile by handle}
+- {name: search_suggest, scope: discovery, access: read, description: Autocomplete for
+    a search}
+- {name: discovery_highlights, scope: discovery, access: read, description: Curated
+    discovery rows}
+- {name: account_forecast, scope: discovery, access: read, description: Audience/forecast
+    snapshot for accounts}
+- {name: get_analyze_status, scope: discovery, access: read, description: Check the status
+    of an AI analysis}
+- {name: whoami, scope: discovery, access: read, description: Who the token is}
+- {name: my_workspaces, scope: discovery, access: read, description: Which workspaces
+    the token can act in}
+
+- {name: list_lists, scope: lists, access: read}
+- {name: get_list, scope: lists, access: read}
+- {name: get_list_members, scope: lists, access: read}
+- {name: create_list, scope: lists, access: write}
+- {name: update_list, scope: lists, access: write}
+- {name: add_to_list, scope: lists, access: write}
+- {name: add_manual_member, scope: lists, access: write}
+- {name: remove_from_list, scope: lists, access: write}
+- {name: submit_list, scope: lists, access: write}
+- {name: recall_list, scope: lists, access: write}
+- {name: delete_list, scope: lists, access: write, destructive: true}
+- {name: create_list_email_invite, scope: lists, access: write, sends_message: true}
+
+- {name: list_campaigns, scope: campaigns, access: read}
+- {name: get_campaign, scope: campaigns, access: read}
+- {name: get_cost_estimate, scope: campaigns, access: read}
+- {name: create_campaign, scope: campaigns, access: write}
+- {name: update_campaign, scope: campaigns, access: write}
+- {name: add_influencers_to_campaign, scope: campaigns, access: write}
+- {name: add_list_to_campaign, scope: campaigns, access: write}
+- {name: remove_influencer_from_campaign, scope: campaigns, access: write}
+- {name: remove_list_from_campaign, scope: campaigns, access: write}
+- {name: submit_campaign, scope: campaigns, access: write}
+- {name: delete_campaign, scope: campaigns, access: write, destructive: true}
+
+- {name: list_campaign_outreach, scope: outreach, access: read}
+- {name: get_outreach_start_quote, scope: outreach, access: read}
+- {name: select_outreach, scope: outreach, access: write}
+- {name: dismiss_outreach, scope: outreach, access: write}
+- {name: update_outreach_setup, scope: outreach, access: write}
+- {name: start_outreach, scope: outreach, access: write, charges_wallet: true, sends_message: true,
+  description: Locks escrow and notifies the creator}
+
+- {name: get_campaign_report, scope: reporting, access: read}
+- {name: get_campaign_report_bundle, scope: reporting, access: read}
+- {name: get_campaign_analysis, scope: reporting, access: read}
+- {name: get_sales_overview, scope: reporting, access: read}
+- {name: get_barter_overview, scope: reporting, access: read}
+- {name: get_account_report, scope: reporting, access: read, description: Intelligence
+    report for an account}
+- {name: get_payment_events, scope: reporting, access: read}
+- {name: get_escrow, scope: reporting, access: read, description: Read-only money visibility}
+- {name: get_subscription, scope: reporting, access: read}
+
+- {name: get_affiliate_overview, scope: affiliate, access: read}
+- {name: get_affiliate_stats, scope: affiliate, access: read}
+- {name: list_affiliate_conversions, scope: affiliate, access: read}
+- {name: list_affiliate_members, scope: affiliate, access: read}
+- {name: get_affiliate_audit, scope: affiliate, access: read}
+- {name: get_affiliate_brands, scope: affiliate, access: read}
+- {name: get_affiliate_settings, scope: affiliate, access: read}
+- {name: get_affiliate_page, scope: affiliate, access: read}
+- {name: list_affiliate_integrations, scope: affiliate, access: read}
+- {name: approve_affiliate_member, scope: affiliate, access: write}
+- {name: reject_affiliate_member, scope: affiliate, access: write}
+- {name: disable_affiliate_member, scope: affiliate, access: write}
+- {name: open_affiliate_dispute, scope: affiliate, access: write}
+- {name: toggle_affiliate_integration, scope: affiliate, access: write}
+- {name: update_affiliate_page, scope: affiliate, access: write}
+
+- {name: get_wallet, scope: wallet, access: read}
+- {name: get_wallet_overview, scope: wallet, access: read}
+- {name: get_wallet_breakdown, scope: wallet, access: read}
+- {name: list_wallet_transactions, scope: wallet, access: read}
+- {name: get_fx_quote, scope: wallet, access: read}
+- {name: get_fx_rates, scope: wallet, access: read}
+- {name: list_topup_packages, scope: wallet, access: read}
+
+- {name: list_crm_members, scope: crm, access: read}
+- {name: list_crm_invites, scope: crm, access: read}
+- {name: list_roster, scope: crm, access: read}
+- {name: get_roster_member, scope: crm, access: read}
+- {name: add_crm_member, scope: crm, access: write}
+- {name: add_crm_manual_member, scope: crm, access: write}
+- {name: regenerate_crm_public_invite, scope: crm, access: write}
+- {name: remove_crm_member, scope: crm, access: write}
+- {name: update_roster_member, scope: crm, access: write}
+- {name: invite_crm_email, scope: crm, access: write, sends_message: true}
+- {name: delete_crm_invite, scope: crm, access: write, destructive: true}
+- {name: remove_roster_member, scope: crm, access: write, destructive: true}
+
+- {name: list_brands, scope: brand, access: read}
+- {name: get_brand_affiliate_config, scope: brand, access: read}
+- {name: create_brand, scope: brand, access: write}
+- {name: update_brand, scope: brand, access: write}
+- {name: set_default_brand, scope: brand, access: write}
+- {name: delete_brand, scope: brand, access: write, destructive: true}
+
+- {name: start_analyze, scope: analyze, access: write, charges_wallet: true, description: Paid
+    on-demand AI Intelligence report}
+- {name: subscription_quote, scope: analyze, access: read, description: Free pricing
+    estimate}
+
+- {name: list_threads, scope: chat, access: read}
+- {name: get_thread_messages, scope: chat, access: read}
+- {name: create_thread, scope: chat, access: write}
+- {name: mark_thread_read, scope: chat, access: write}
+- {name: send_message, scope: chat, access: write, sends_message: true}
+- {name: bulk_send, scope: chat, access: write, sends_message: true, description: Up
+    to 200 threads}
+
+errors:
+- {status: 401, body: '{"error":"missing bearer token"}', when: no Authorization header
+    (observed live, anonymous probe)}
+- {status: 403, when: unauthorized or the token is missing the required scope}
+- {status: 402, when: insufficient wallet balance for a charging tool}
+
+x-evidence:
+- {url: 'https://mcp.keepface.com/mcp', method: 'POST tools/list (anonymous)', http_status: 401,
+  body: '{"error":"missing bearer token"}', server: Express, fetched: '2026-08-13'}
+- {url: 'https://help.keepface.com/brand/integrations/manage-with-claude-code/', http_status: 200,
+  fetched: '2026-08-13'}
+- {url: 'https://help.keepface.com/brand/integrations/claude-code-tools-reference/',
+  http_status: 200, fetched: '2026-08-13'}
+- {url: 'https://mcp.keepface.com/.well-known/oauth-protected-resource', http_status: 404,
+  note: 'no RFC 9728 protected-resource metadata; auth is a static bearer token, not OAuth'}

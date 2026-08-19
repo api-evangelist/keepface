@@ -1,0 +1,133 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+docs:
+- https://help.keepface.com/brand/affiliate-program/api-reference/
+- https://help.keepface.com/brand/affiliate-program/postback-hmac-integration/
+- https://help.keepface.com/influencer/affiliate-program/shopify-webhook/
+
+spec_type: none
+asyncapi_published: false
+
+# IMPORTANT — READ THE DIRECTION. Keepface's documented event surface is INBOUND:
+# the brand's backend, its Shopify store, or a browser pixel POSTs sale and refund
+# events INTO Keepface. Keepface does not publish an outbound webhook catalogue —
+# it sends no HTTP callbacks to subscriber endpoints. Its own event notifications
+# (campaign, outreach, wallet, billing, system) are delivered only as in-app,
+# email and mobile push, all account-gated, with no webhook channel offered.
+# This artifact therefore records a real, signed, versioned, documented webhook
+# CONTRACT that integrators must implement against — not an event-subscription
+# feed.
+
+direction: inbound
+outbound_webhooks: false
+outbound_note: >-
+  Probed the notification documentation. Keepface offers exactly three delivery
+  channels — in-app (always on), email, and mobile push — across five event
+  groups (Campaign, Outreach, Wallet, Billing, System). No webhook or HTTP
+  callback channel is offered on any event, at any tier.
+
+base_url: https://api.keepface.ai/api/v2
+transport: HTTPS POST, application/json
+event_count: 4
+
+receivers:
+
+- name: affiliate.sale
+  endpoint: POST /api/v2/affiliate/postback/{brand_id}
+  direction: brand backend -> Keepface
+  purpose: report a completed purchase so it can be attributed to a creator
+  security: HMAC-SHA256 body signature (X-KF-Signature over "<timestamp>.<body>")
+  replay_window_seconds: 300
+  idempotency_key: (brand_id, order_id)
+  payload_fields:
+  - {name: token, type: string, length: 8, required: token OR discount_code, note: mixed-case
+      alphanumeric, case-sensitive}
+  - {name: discount_code, type: string, max_length: 64, required: token OR discount_code,
+    note: case-insensitive on lookup}
+  - {name: order_id, type: string, max_length: 128, required: true, note: the idempotency
+      key}
+  - {name: gross_amount, type: number, minimum: 0, required: true, note: major units
+      — 149.00 is $149, not 14900}
+  - {name: net_amount, type: number, minimum: 0, required: false, note: defaults to
+      gross}
+  - {name: currency, type: string, length: 3, required: true, note: ISO 4217, uppercase}
+  - {name: customer_email, type: string, required: false, note: fraud and dedupe; hashed
+      before storage}
+  - {name: customer_ip, type: string, required: false, note: fraud and geo; hashed before
+      storage}
+  - {name: customer_country, type: string, length: 2, required: false, note: ISO 3166-1
+      alpha-2; falls back to IP geo}
+  - {name: skus, type: "string[]", required: false, note: evaluated against excluded_skus}
+  - {name: categories, type: "string[]", required: false, note: evaluated against excluded_categories}
+  - {name: brand_confirmed_at, type: string, format: ISO 8601, required: false, note: defaults
+      to now}
+  - {name: source_method, type: enum, required: false, values: [postback]}
+  - {name: metadata, type: object, required: false, note: free-form, surfaced in admin
+      drilldown}
+  responses:
+  - {status: 201, body: '{data: conversion}', meaning: new conversion created}
+  - {status: 200, body: '{ok: true, created: false}', meaning: idempotent replay}
+  - {status: 200, body: '{ok: false, reason: unknown_brand}', meaning: brand does not
+      exist}
+  - {status: 200, body: '{ok: false, reason: affiliate_disabled}', meaning: affiliate
+      paused}
+  - {status: 400, body: '{error: invalid_json}'}
+  - {status: 401, body: '{error: invalid_signature}'}
+  - {status: 401, body: '{error: stale_timestamp}'}
+  - {status: 422, body: '{error: rejected, message: ...}', meaning: anti-fraud or restriction}
+  - {status: 429, body: '{error: Too Many Requests}'}
+  rate_limit: 120 per minute per IP
+
+- name: affiliate.refund
+  endpoint: POST /api/v2/affiliate/postback/{brand_id}/refund
+  direction: brand backend -> Keepface
+  purpose: claw back commission on a refunded order
+  security: HMAC-SHA256 body signature
+  idempotency_key: (brand_id, order_id, refund_id) when refund_id is present, otherwise
+    (brand_id, order_id, sha256(refund_amount + currency))
+  payload_fields:
+  - {name: order_id, type: string, required: true, note: must match an existing conversion}
+  - {name: refund_id, type: string, required: false, note: optional but recommended}
+  - {name: refund_amount, type: number, required: true}
+  - {name: currency, type: string, length: 3, required: true}
+  - {name: brand_confirmed_at, type: string, format: ISO 8601, required: false}
+  - {name: metadata, type: object, required: false}
+  rate_limit: 120 per minute per IP
+
+- name: affiliate.pixel
+  endpoint: POST /api/v2/affiliate/pixel/{brand_id}
+  direction: buyer browser -> Keepface
+  purpose: browser-side sale event fired from the checkout success page
+  security: Origin allowlist (configured at Brands > Edit > Affiliate > Tracking >
+    Allowed pixel origins)
+  cors_preflight: OPTIONS /api/v2/affiliate/pixel/{brand_id}
+  idempotency_key: (brand_id, order_id)
+  payload_fields: same shape as affiliate.sale
+  rate_limit: 240 per minute per IP
+
+- name: affiliate.shopify
+  endpoint: POST /api/v2/affiliate/shopify/{brand_id}
+  direction: Shopify -> Keepface
+  purpose: receive Shopify orders, refunds and app-uninstall webhooks
+  security: Shopify HMAC — header X-Shopify-Hmac-Sha256, base64(hmac_sha256(shopify_secret,
+    raw_body))
+  idempotency_key: (brand_id, order_id) using Shopify's own order.id
+  failure: '412 {error: shopify_not_configured} when the brand has no Shopify secret'
+  rate_limit: 120 per minute per IP
+
+retry_expectations:
+  # What Keepface asks a sender to do — the sender is the integrator here.
+  retry_on: [429, 5xx]
+  do_not_retry_on: [200, 201, 401, 412, 422]
+  backoff: exponential 1s, 2s, 4s, 8s
+  max_attempts: 5
+  honour_retry_after: true
+
+x-evidence:
+- {url: 'https://help.keepface.com/brand/affiliate-program/api-reference/', http_status: 200,
+  fetched: '2026-08-13'}
+- {url: 'https://help.keepface.com/brand/affiliate-program/postback-hmac-integration/',
+  http_status: 200, fetched: '2026-08-13'}
+- {url: 'https://help.keepface.com/brand/notifications/channels/', http_status: 200,
+  note: 'confirms three delivery channels, none of them a webhook', fetched: '2026-08-13'}

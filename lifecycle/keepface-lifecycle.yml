@@ -1,0 +1,83 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+
+api: Keepface Affiliate API v2
+
+versioning:
+  scheme: uri-path
+  current: v2
+  path_prefix: /api/v2/
+  stability: stable
+  statement: 'v2 is stable. All current paths are under /api/v2/'
+  docs: https://help.keepface.com/brand/affiliate-program/api-reference/
+  next_version:
+    version: v3
+    timeline: TBA
+  breaking_change_definition: 'Schema additions (new optional fields) are NOT breaking'
+
+deprecation:
+  policy_published: true
+  policy_url: https://help.keepface.com/brand/affiliate-program/api-reference/
+  support_window: v2 stays alive for at least 12 months after v3 ships
+  sunset_header: false
+  deprecation_header: false
+  note: >-
+    The commitment is a stated minimum support window inside the API reference,
+    not a standalone deprecation-policy page, and it is not machine-signalled —
+    Keepface returns neither the RFC 8594 Sunset header nor a Deprecation header
+    on any observed response. A client learns about a version change only by
+    reading the docs.
+
+credential_lifecycle:
+  # Real, dated lifecycle rules on the two credentials Keepface issues.
+  brand_affiliate_secret:
+    shown_once: true
+    rotatable: true
+    overlap_after_rotation_days: 7
+    note: the previous secret stays valid for 7 days after rotation so a caller can
+      roll without downtime
+  mcp_api_token:
+    shown_once: true
+    default_expiry_days: 90
+    expiry_configurable: true
+    revocable: true
+    revocation_effect: the connection stops working immediately; normal login is unaffected
+    last_used_visible: true
+
+sla:
+  published: false
+  note: >-
+    An SLA is named as an Enterprise-tier entitlement on the pricing page ("SSO,
+    audit log, SLA") but no uptime target, credit schedule or SLA document is
+    published publicly.
+
+status_page:
+  published: false
+  probed:
+  - {url: 'https://status.keepface.com', status: 404}
+  - {url: 'https://keepface.com/status', status: 200, verdict: soft-200 catch-all —
+      returns the marketing homepage, not a status page}
+  note: >-
+    No status page exists. Keepface does route incident and scheduled-maintenance
+    notices to users, but only as in-product notifications ("System, incident,
+    scheduled maintenance, policy update" in the per-event notification matrix),
+    which are account-gated and not a public availability signal. No StatusPage
+    pointer is emitted in apis.yml.
+
+roadmap:
+  published: false
+  probed:
+  - {url: 'https://keepface.com/roadmap', status: 200, verdict: soft-200 catch-all —
+      returns the marketing homepage}
+
+deprecated_operations: []
+
+x-evidence:
+- {url: 'https://help.keepface.com/brand/affiliate-program/api-reference/', http_status: 200,
+  fetched: '2026-08-13'}
+- {url: 'https://status.keepface.com', http_status: 404, fetched: '2026-08-13'}
+- {url: 'https://keepface.com/zzz-not-a-real-page-12345', http_status: 200, note: 'control
+    probe — proves keepface.com answers 200 with the homepage for any unknown
+    single-segment path, so a 200 on /status, /roadmap, /changelog or /security is
+    not evidence the page exists', fetched: '2026-08-13'}

@@ -1,0 +1,158 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+docs:
+- https://help.keepface.com/brand/affiliate-program/api-reference/
+- https://help.keepface.com/brand/affiliate-program/postback-hmac-integration/
+- https://help.keepface.com/brand/integrations/claude-code-tools-reference/
+
+format: custom
+rfc9457: false
+content_type: application/json
+envelope:
+  error_key: error
+  detail_key: message
+  soft_failure_keys: [ok, reason]
+note: >-
+  Keepface does not use RFC 9457 problem+json. Failures arrive in one of two
+  shapes: a 4xx with {"error": "<slug>"} (plus an optional "message"), or an
+  HTTP 200 with {"ok": false, "reason": "<slug>"} for business-state conditions
+  the caller must stop retrying. Every entry below is transcribed from the
+  provider's published response tables.
+
+problem_count: 15
+
+problems:
+
+# --- Affiliate API v2, write endpoints -------------------------------------
+- status: 400
+  code: invalid_json
+  title: Body was not valid JSON
+  surface: POST /api/v2/affiliate/postback/{brand_id}
+  remediation: fix the serialisation; do not retry unchanged
+  retryable: false
+
+- status: 401
+  code: invalid_signature
+  title: HMAC signature mismatch
+  surface: POST /api/v2/affiliate/postback/{brand_id}
+  cause: the X-KF-Signature does not match HMAC-SHA256(brand_secret, "<timestamp>.<body>")
+  remediation: check the brand secret and that the signature is computed over the raw
+    body, not a re-serialised one
+  retryable: false
+
+- status: 401
+  code: stale_timestamp
+  title: Clock skew greater than five minutes
+  surface: POST /api/v2/affiliate/postback/{brand_id}
+  cause: abs(now - X-KF-Timestamp) > 300 seconds
+  remediation: sync the calling server clock to NTP
+  retryable: false
+
+- status: 401
+  code: missing_bearer_token
+  title: No Authorization header on the MCP server
+  surface: POST https://mcp.keepface.com/mcp
+  body: '{"error":"missing bearer token"}'
+  remediation: send Authorization&#58; Bearer kf_&lt;token&gt;
+  retryable: false
+  observed_live: true
+
+- status: 402
+  code: insufficient_balance
+  title: Insufficient wallet balance
+  surface: MCP wallet-charging tools (start_outreach, start_analyze)
+  remediation: top up the wallet in the panel; tokens cannot top up
+  retryable: false
+
+- status: 403
+  code: unauthorized_or_missing_scope
+  title: Not authorized, or the token lacks the required scope
+  surface: MCP server
+  remediation: create a token with the needed scope, or act in the correct workspace
+  retryable: false
+
+- status: 412
+  code: shopify_not_configured
+  title: Brand exists but no Shopify secret is set
+  surface: POST /api/v2/affiliate/shopify/{brand_id}
+  remediation: configure the Shopify secret for the brand before sending webhooks
+  retryable: false
+
+- status: 422
+  code: rejected
+  title: Anti-fraud or restriction triggered
+  surface: POST /api/v2/affiliate/postback/{brand_id}
+  detail: the human explanation is in the message field
+  remediation: inspect message; commonly a geo, SKU or category restriction, or a
+    velocity rule
+  retryable: false
+
+- status: 429
+  code: too_many_requests
+  title: Rate limit exceeded
+  body: '{"error":"Too Many Requests"}'
+  headers: [Retry-After]
+  remediation: honour Retry-After, then exponential backoff 1s/2s/4s/8s, max 5 attempts
+  retryable: true
+
+# --- Affiliate API v2, soft failures (HTTP 200) ----------------------------
+- status: 200
+  code: unknown_brand
+  shape: '{"ok": false, "reason": "unknown_brand"}'
+  title: Brand does not exist
+  surface: POST /api/v2/affiliate/postback/{brand_id}
+  remediation: correct the brand_id; deliberately a 200 to stop retry storms
+  retryable: false
+
+- status: 200
+  code: affiliate_disabled
+  shape: '{"ok": false, "reason": "affiliate_disabled"}'
+  title: Brand exists but its affiliate program is paused
+  surface: POST /api/v2/affiliate/postback/{brand_id}
+  remediation: re-enable the affiliate program; do not retry until then
+  retryable: false
+
+# --- Affiliate API v2, click resolve --------------------------------------
+- status: 400
+  code: invalid_token
+  title: Affiliate token is malformed
+  surface: GET /api/v2/affiliate/resolve/{token}
+  cache_seconds: 300
+  retryable: false
+  observed_live: true
+
+- status: 404
+  code: not_found
+  title: Affiliate token is well-formed but unknown
+  surface: GET /api/v2/affiliate/resolve/{token}
+  cache_seconds: 60
+  retryable: false
+  observed_live: true
+
+- status: 410
+  code: not_yet_active
+  title: Campaign has not started
+  surface: GET /api/v2/affiliate/resolve/{token}
+  cache_seconds: 60
+  retryable: false
+
+- status: 410
+  code: expired
+  title: Campaign has ended
+  surface: GET /api/v2/affiliate/resolve/{token}
+  cache_seconds: 3600
+  retryable: false
+
+retry_guidance:
+  retry_on: [429, 5xx]
+  do_not_retry_on: [200, 201, 401, 412, 422]
+  backoff: exponential 1s, 2s, 4s, 8s
+  max_attempts: 5
+
+x-evidence:
+- {url: 'https://api.keepface.ai/api/v2/affiliate/resolve/zzzz', http_status: 400,
+  fetched: '2026-08-13'}
+- {url: 'https://api.keepface.ai/api/v2/affiliate/resolve/AbCd1234', http_status: 404,
+  fetched: '2026-08-13'}
+- {url: 'https://mcp.keepface.com/mcp', http_status: 401, fetched: '2026-08-13'}

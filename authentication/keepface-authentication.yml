@@ -1,0 +1,141 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+docs:
+- https://help.keepface.com/brand/affiliate-program/api-reference/
+- https://help.keepface.com/brand/affiliate-program/postback-hmac-integration/
+- https://help.keepface.com/brand/integrations/manage-with-claude-code/
+
+# Derived from the provider's published documentation, not from an OpenAPI —
+# Keepface publishes no machine-readable spec. Every scheme below is quoted from
+# a help-centre page and, where noted, confirmed against a live response.
+
+summary:
+  types: [hmac, bearer, origin-allowlist, none]
+  oauth2: false
+  openid_connect: false
+  api_key_in: [header]
+  oauth2_flows: []
+  note: >-
+    Keepface runs two distinct auth models on two distinct surfaces. The public
+    Affiliate API v2 is machine-to-machine and authenticates each request by
+    HMAC-SHA256 body signature with a per-brand shared secret; there is no
+    bearer token and no OAuth. The MCP server authenticates with a static,
+    workspace-pinned bearer token created by a human in the panel. Neither
+    surface implements OAuth 2.0 or OIDC, and no /.well-known/ auth metadata is
+    served on any host.
+
+schemes:
+
+- name: hmac-body-signature
+  surface: Affiliate API v2 — postback and refund
+  type: hmac
+  algorithm: HMAC-SHA256
+  applies_to:
+  - POST /api/v2/affiliate/postback/{brand_id}
+  - POST /api/v2/affiliate/postback/{brand_id}/refund
+  headers:
+    signature: X-KF-Signature
+    timestamp: X-KF-Timestamp
+  signature_encoding: lowercase hex
+  signed_payload: '<timestamp> + "." + <raw_body>'
+  construction: 'signature = lowercase(hex(HMAC-SHA256(brand_secret, signed_payload)))'
+  replay_protection:
+    enabled: true
+    header: X-KF-Timestamp
+    format: unix epoch seconds
+    tolerance_seconds: 300
+    on_violation: '401 {"error":"stale_timestamp"}'
+    remediation: sync the calling server clock to NTP
+  secret:
+    name: brand secret
+    env_var_convention: KF_AFFILIATE_SECRET
+    location: Brands > Edit > Affiliate > Tracking tab > Generate secret
+    shown_once: true
+    rotatable: true
+    overlap_on_rotation_days: 7
+    note: after rotation the previous secret stays valid for 7 days so the caller can
+      roll without downtime
+  failure: '401 {"error":"invalid_signature"}'
+
+- name: shopify-webhook-hmac
+  surface: Affiliate API v2 — Shopify receiver
+  type: hmac
+  algorithm: HMAC-SHA256
+  applies_to:
+  - POST /api/v2/affiliate/shopify/{brand_id}
+  headers:
+    signature: X-Shopify-Hmac-Sha256
+  signature_encoding: base64
+  construction: 'base64(hmac_sha256(shopify_secret, raw_body))'
+  note: standard Shopify webhook verification; the shared secret is the Shopify app
+    secret configured per brand
+  failure: '412 {"error":"shopify_not_configured"} when the brand has no Shopify secret
+    set'
+
+- name: pixel-origin-allowlist
+  surface: Affiliate API v2 — browser JS pixel
+  type: origin-allowlist
+  applies_to:
+  - OPTIONS /api/v2/affiliate/pixel/{brand_id}
+  - POST /api/v2/affiliate/pixel/{brand_id}
+  mechanism: browser Origin header checked against a per-brand allowlist
+  configuration: Brands > Edit > Affiliate > Tracking > Allowed pixel origins
+  note: >-
+    Deliberately not a shared secret — the pixel runs in the buyer's browser, so
+    the origin allowlist plus server-side anti-fraud is the control. Brands that
+    need stronger assurance are directed to the server-side postback instead.
+
+- name: none-public-resolve
+  surface: Affiliate API v2 — click resolve
+  type: none
+  applies_to:
+  - GET /api/v2/affiliate/resolve/{token}
+  mechanism: unauthenticated; the 8-character affiliate token in the path is itself
+    the capability
+  token_format: mixed-case base62, 8 characters, case-sensitive
+  verified: >-
+    probed anonymously 2026-08-13; a well-formed unknown token returns 404
+    (cached 60s) and a malformed token returns 400 (cached 300s), both as JSON,
+    with X-RateLimit-Limit 600 present on the response.
+
+- name: mcp-bearer-token
+  surface: MCP server (https://mcp.keepface.com/mcp)
+  type: http
+  scheme: bearer
+  header: Authorization
+  format: 'Bearer kf_<token>'
+  token_prefix: kf_
+  in: header
+  issued_by: Settings, API Tokens (per brand workspace)
+  shown_once: true
+  default_expiry_days: 90
+  expiry_configurable: true
+  revocable: true
+  scoped: true
+  scopes_file: ../scopes/keepface-scopes.yml
+  workspace_pinned: true
+  oauth: false
+  discovery_metadata: none (no /.well-known/oauth-protected-resource, HTTP 404)
+  failure: '401 {"error":"missing bearer token"} — observed live on an anonymous
+    tools/list POST, 2026-08-13'
+  note: >-
+    Static long-lived credential, not an OAuth access token. There is no
+    authorization endpoint, no refresh, and no dynamic client registration; a
+    human must create the token in the panel and paste it into the agent's MCP
+    configuration.
+
+not_supported:
+- oauth2
+- openid-connect
+- mutual-tls
+- basic-auth
+- api-key-query-parameter
+
+x-evidence:
+- {url: 'https://api.keepface.ai/api/v2/affiliate/resolve/zzzz', http_status: 400,
+  note: anonymous, JSON body, x-ratelimit-limit 600, fetched '2026-08-13'}
+- {url: 'https://mcp.keepface.com/mcp', http_status: 401, note: 'anonymous POST tools/list
+    returns {"error":"missing bearer token"}', fetched: '2026-08-13'}
+- {url: 'https://help.keepface.com/brand/affiliate-program/api-reference/', http_status: 200,
+  fetched: '2026-08-13'}

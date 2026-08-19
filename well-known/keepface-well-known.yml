@@ -1,0 +1,92 @@
+generated: '2026-08-13'
+method: probed
+source: live GET probes of every Keepface host named in apis.yml, the CSP connect-src
+  allowlist on keepface.com, and the published API/MCP hosts
+
+# RECORDED ABSENCE. Every /.well-known/ path returned 404 on every Keepface host.
+# No WellKnown and no SecurityTxt pointer is emitted in apis.yml, because none of
+# these probes returned a document — the file records that the surface is not served.
+# keepface.ai 301-redirects to keepface.com for all of these paths.
+
+summary:
+  hosts_probed: 4
+  paths_probed_per_host: 9
+  documents_found: 0
+  security_txt: false
+  openid_configuration: false
+  oauth_authorization_server: false
+  oauth_protected_resource: false
+  api_catalog: false
+  ai_plugin: false
+  agent_card: false
+
+hosts:
+- host: https://keepface.com
+  role: website / marketplace
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /.well-known/mcp.json, status: 404}
+
+- host: https://api.keepface.ai
+  role: API host (baseURL of the Affiliate API v2)
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /.well-known/mcp.json, status: 404}
+
+- host: https://mcp.keepface.com
+  role: MCP server host
+  documents:
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /.well-known/security.txt, status: 404}
+  note: >-
+    Notable gap. The MCP server is live and auth-gated but publishes neither
+    RFC 9728 protected-resource metadata nor RFC 8414 authorization-server
+    metadata, so an agent cannot discover how to authenticate from the endpoint
+    alone — the bearer token has to be created by a human in the brand workspace.
+
+- host: https://help.keepface.com
+  role: documentation host
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /.well-known/mcp.json, status: 404}
+
+- host: https://keepface.ai
+  role: alternate brand domain
+  note: 301-redirects every /.well-known/ path and /llms.txt to keepface.com
+  documents:
+  - {path: /.well-known/agent-card.json, status: 301}
+  - {path: /.well-known/agent.json, status: 301}
+  - {path: /.well-known/security.txt, status: 301}
+
+related:
+  llms_txt:
+    # Not a /.well-known/ path, but the one machine-readable discovery document
+    # Keepface does serve. Captured verbatim.
+    url: https://keepface.com/llms.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+    file: ../llms/keepface-llms.txt

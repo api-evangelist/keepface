@@ -1,0 +1,56 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+
+# Keepface publishes no standalone changelog site — https://keepface.com/changelog
+# is a soft-200 that renders the marketing homepage. The only dated change history
+# the company publishes is the Changelog section at the foot of the Affiliate API
+# v2 reference, transcribed verbatim below.
+
+api: Keepface Affiliate API v2
+location: Changelog section of the Affiliate API v2 reference
+standalone_changelog_site: false
+rss: false
+scheme: uri-path major version (v2); individual changes are dated, not numbered
+current_version: v2
+entry_count: 5
+
+entries:
+- date: '2026-06-01'
+  version: v2
+  type: initial
+  breaking: false
+  highlights: Initial v2 spec; postback, pixel, Shopify and resolve endpoints stable
+- date: '2026-06-01'
+  version: v2
+  type: addition
+  breaking: false
+  highlights: Discount-code attribution added
+- date: '2026-06-01'
+  version: v2
+  type: addition
+  breaking: false
+  highlights: HMAC timestamp signing introduced (backward-compatible)
+- date: '2026-06-01'
+  version: v2
+  type: addition
+  breaking: false
+  highlights: Rate limits documented and enforced
+- date: '2026-06-01'
+  version: v2
+  type: addition
+  breaking: false
+  highlights: Token regex widened to mixed-case base62
+
+observations:
+  all_entries_same_date: true
+  note: >-
+    All five entries carry the same date, 2026-06-01, which reads as the day the
+    v2 reference was first published rather than five separate dated releases.
+    Recorded as published; no change has been logged since.
+
+x-evidence:
+- {url: 'https://help.keepface.com/brand/affiliate-program/api-reference/', http_status: 200,
+  fetched: '2026-08-13'}
+- {url: 'https://keepface.com/changelog', http_status: 200, verdict: soft-200 catch-all,
+  fetched: '2026-08-13'}

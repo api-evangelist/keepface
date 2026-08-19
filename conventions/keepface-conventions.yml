@@ -1,0 +1,149 @@
+generated: '2026-08-13'
+method: searched
+source: https://help.keepface.com/brand/affiliate-program/api-reference/
+docs:
+- https://help.keepface.com/brand/affiliate-program/api-reference/
+- https://help.keepface.com/brand/affiliate-program/postback-hmac-integration/
+- https://help.keepface.com/brand/integrations/claude-code-tools-reference/
+
+# Cross-cutting runtime semantics for the Keepface Affiliate API v2 and the MCP
+# server. Every value below is published by Keepface; the rate-limit headers and
+# cache directives were additionally observed on live anonymous responses.
+
+api: Keepface Affiliate API v2
+base_url: https://api.keepface.ai/api/v2
+
+authentication:
+  style: HMAC-SHA256 body signature per request (no bearer token on the REST API)
+  detail: ../authentication/keepface-authentication.yml
+
+idempotency:
+  supported: true
+  mechanism: natural key on the request body — there is no Idempotency-Key header
+  key_field: order_id
+  key_constraints: {type: string, max_length: 128, required: true}
+  scope_by_endpoint:
+    postback_sale: (brand_id, order_id)
+    postback_refund: (brand_id, order_id, refund_id) when refund_id is present, otherwise
+      (brand_id, order_id, sha256(refund_amount + currency))
+    pixel: (brand_id, order_id) — same as the postback sale
+    shopify_webhook: (brand_id, order_id) using Shopify's own order.id
+  replay_behaviour: >-
+    A duplicate call returns the existing row with created: false and HTTP 200,
+    instead of creating a second conversion. A first successful call returns HTTP
+    201 with the conversion. The caller distinguishes create from replay by the
+    status code and the created flag, not by an error.
+  retention: not published
+  documentation: https://help.keepface.com/brand/affiliate-program/api-reference/
+  note: >-
+    Idempotency is genuinely part of the contract, not an aspiration: the docs
+    name order_id "your idempotency key", specify the composite key per endpoint,
+    and the retry policy explicitly instructs callers not to retry a 200 or 201.
+
+replay_protection:
+  supported: true
+  headers: [X-KF-Signature, X-KF-Timestamp]
+  window_seconds: 300
+  on_violation: 401 stale_timestamp
+
+pagination:
+  documented: false
+  note: >-
+    The public Affiliate API v2 exposes no collection-listing endpoints, so no
+    pagination contract is published. Collection reads (conversions, members,
+    transactions, threads) exist only as MCP tools, whose paging parameters are
+    not documented publicly and would require authenticated introspection.
+
+versioning:
+  scheme: uri-path
+  current: v2
+  path_prefix: /api/v2/
+  stability: 'v2 is stable. All current paths are under /api/v2/'
+  next_version: v3, timeline TBA
+  support_window: v2 stays alive for at least 12 months after v3 ships
+  breaking_change_definition: schema additions (new optional fields) are NOT breaking
+  detail: ../lifecycle/keepface-lifecycle.yml
+
+error_envelope:
+  format: custom JSON — NOT RFC 9457 problem+json
+  content_type: application/json
+  failure_shape: '{"error": "<machine_slug>"}'
+  failure_shape_with_detail: '{"error": "rejected", "message": "<human explanation>"}'
+  soft_failure_shape: '{"ok": false, "reason": "<machine_slug>"}'
+  success_shapes:
+  - '{"data": <conversion>}   # HTTP 201, created'
+  - '{"ok": true, "created": false}   # HTTP 200, idempotent replay'
+  note: >-
+    Two distinct failure channels. Signature, payload and configuration problems
+    return a 4xx with an error key. Business-state problems the caller must not
+    retry (unknown brand, affiliate disabled) return HTTP 200 with ok:false and a
+    reason — deliberately, to stop retry storms against a brand that no longer
+    exists.
+  catalog: ../errors/keepface-problem-types.yml
+
+rate_limit_signaling:
+  headers_returned: [X-RateLimit-Limit, X-RateLimit-Remaining]
+  retry_after: Retry-After is returned on 429
+  exhaustion_status: 429
+  exhaustion_body: '{"error":"Too Many Requests"}'
+  standard: non-standard X-RateLimit-* prefix (not RFC 9331 RateLimit-*)
+  reset_header: not returned
+  verified: >-
+    X-RateLimit-Limit: 600 and X-RateLimit-Remaining observed on live anonymous
+    GET /api/v2/affiliate/resolve/{token} responses, 2026-08-13, matching the
+    600/min documented for that endpoint.
+  detail: ../rate-limits/keepface-rate-limits.yml
+
+retry_policy:
+  documented: true
+  retry_on: [429, 5xx]
+  do_not_retry_on: [200, 201, 401, 412, 422]
+  backoff: exponential — 1s, 2s, 4s, 8s
+  max_attempts: 5
+  honour_retry_after: true
+
+caching:
+  documented: true
+  note: error responses on the public resolve endpoint carry explicit cache lifetimes
+    so a CDN or Worker can absorb repeat traffic
+  directives:
+  - {status: 400, reason: invalid_token, cache_seconds: 300}
+  - {status: 404, reason: not_found, cache_seconds: 60}
+  - {status: 410, reason: not_yet_active, cache_seconds: 60}
+  - {status: 410, reason: expired, cache_seconds: 3600}
+  verified: 'observed live — cache-control: max-age=300, public, s-maxage=300 on a
+    malformed token; max-age=60 on an unknown token'
+
+request_tracing:
+  request_id_header: not published
+  note: no correlation-id header is documented or observed on responses
+
+metadata:
+  supported: true
+  field: metadata
+  shape: free-form JSON object on sale and refund events
+  visibility: surfaced in the admin drilldown
+
+field_expansion:
+  supported: false
+
+data_conventions:
+  amounts: major units, not minor — 149.00 means $149, not 14900
+  currency: ISO 4217, three letters, uppercase
+  country: ISO 3166-1 alpha-2
+  timestamps: ISO 8601 (for example 2026-06-01T14:32:00Z)
+  affiliate_token: 8 characters, mixed-case base62, case-sensitive
+  discount_code: max 64 characters, case-INsensitive on lookup
+  pii_handling: customer_email and customer_ip are hashed before storage; they are
+    accepted only to power fraud detection, dedupe and geo fallback
+
+agent_conventions:
+  # The MCP surface carries its own runtime contract, distinct from REST.
+  surface: https://mcp.keepface.com/mcp
+  confirmation_model: every write returns a preview and executes only on an explicit
+    "confirm" reply from the operator
+  read_model: reads execute immediately and mutate nothing
+  hazard_markers: {"$": charges the wallet, "✉": sends a real message or email,
+    "!": destructive}
+  hard_limits: no token can move money in any direction, or change account security
+  tenancy: one token, one brand workspace
