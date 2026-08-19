@@ -37,7 +37,7 @@ x-backed-by:
 x-tier: profiled
 x-tier-reason: two public API surfaces found and documented — a signed REST affiliate
   API and a hosted MCP server
-specificationVersion: '0.20'
+specificationVersion: '0.23'
 created: '2026-07-17'
 modified: '2026-08-13'
 tags:
