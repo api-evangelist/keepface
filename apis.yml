@@ -45,6 +45,19 @@ tags:
 - Influencer Marketing
 - Creator Economy
 - Marketing
+- Social-Media
+- Affiliate Marketing
+- Advocacy
+- Campaign Management
+- MCP
+- AI Agents
+- Attribution
+- Webhook
+tags_raw:
+- Company
+- Influencer Marketing
+- Creator Economy
+- Marketing
 - Social Media
 - Affiliate Marketing
 - Advocacy
@@ -68,6 +81,11 @@ apis:
   humanURL: https://help.keepface.com/brand/affiliate-program/api-reference/
   baseURL: https://api.keepface.ai/api/v2
   tags:
+  - Affiliate Marketing
+  - Attribution
+  - Webhook
+  - Conversion Tracking
+  tags_raw:
   - Affiliate Marketing
   - Attribution
   - Webhooks
