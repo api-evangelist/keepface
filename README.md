@@ -64,6 +64,125 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-KeepFace is a company surfaced as a portfolio company of 500-global and added to the API Evangelist network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+KeepFace is an all-in-one influencer marketing platform that helps brands, agencies, and enterprises discover, manage, and measure creator campaigns at scale. The platform spans creator discovery and CRM across 2M+ influencers in 43 countries, campaign management from brief through outreach, contract, and content approval, AI-driven brand-safety scoring and sentiment analysis of posts, real-time performance reporting (engagement rate, estimated media value, deletion-proof post archives), affiliate link tracking with pay-on-attributed-sales commissioning, and customer and employee advocacy programs. KeepFace is a portfolio company of 500 Global.
 
-Backed by: 500-global — https://keepface.com
+**Areas:** Company · Influencer Marketing · Creator Economy · Marketing · Social Media · Affiliate Marketing · Advocacy · Campaign Management · MCP · AI Agents · Attribution · Webhook
+
+## KeepFace on APIs.io
+
+Everything profiled for KeepFace is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/keepface/](https://apis.io/providers/keepface/)** — or go straight to one of the APIs or properties below.
+
+### APIs (2)
+
+- [Keepface Affiliate API v2](https://apis.io/apis/keepface/affiliate/) — The public server-side affiliate tracking API for Keepface. Brands POST sale and refund events from their own backend (or from Shopify, or from the browser…
+- [Keepface MCP Server](https://apis.io/apis/keepface/mcp/) — A hosted, remote Model Context Protocol server that exposes 94 actions across the Keepface brand workspace — discovery, lists, campaigns, outreach,…
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### AsyncAPI (1)
+
+Event-driven and webhook contracts.
+
+- [Keepface Affiliate Webhooks](https://apis.io/asyncapis/keepface/keepface-affiliate-webhooks/)
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [keepface](https://apis.io/servers/keepface/keepface/)
+
+#### Security (2)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Keepface Authentication](https://apis.io/security/keepface/keepface-authentication/)
+- [Keepface Domain Security](https://apis.io/security/keepface/keepface-domain-security/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Keepface Scopes](https://apis.io/scopes/keepface/keepface-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Keepface Plans Pricing](https://apis.io/plans/keepface/keepface-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Keepface Rate Limits](https://apis.io/rate-limits/keepface/keepface-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://keepface.com)
+- [Documentation](https://help.keepface.com)
+- [Getting started](https://help.keepface.com/brand/getting-started/welcome/)
+- [API reference](https://help.keepface.com/brand/affiliate-program/api-reference/)
+- [Pricing](https://keepface.com/pricing)
+- [Sign up](https://keepface.com/signup)
+- [Support](https://help.keepface.com)
+- [Terms of service](https://keepface.com/terms)
+- [Privacy policy](https://keepface.com/privacy)
+
+## API Evangelist rating
+
+**Kin Score 38.1** — thin · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 39.0 |
+| Contract governance | 4.5 |
+| Operational transparency | 63.2 |
+| Developer ergonomics | 45.2 |
+| Access clarity | 6.6 |
+
+**Agent readiness 31.9** — agent-ready
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | documented (partial credit) |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | documented (partial credit) |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | yes |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | na |
+
+**Regulatory alignment 26.5** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/keepface/](https://apis.io/providers/keepface/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for KeepFace: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/keepface/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
